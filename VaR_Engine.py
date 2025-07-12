@@ -23,7 +23,9 @@ price changes over time. Useful for quantitative finance because of mathmatical 
 """
 
 # sample portfolio weight vector
-weights = np.array([1/6] * 6)
+weights = np.random.random(len(log_returns.columns))
+weights /= np.sum(weights)
+
 
 # computing volitility
 daily_vol = log_returns.std()
@@ -34,7 +36,18 @@ correlation_matrix = log_returns.corr()
 
 
 def Historical_VaR(weights, log_returns, amount_invested, confidence, lookback_days=520):
-    p = 1 - confidence
-    portfolio_returns = log_returns.dot(weights)
-    hist_Var = np.percentile(portfolio_returns, p)
+    # Using more recent data
+    recent_returns = log_returns[-lookback_days:]
+
+    # Calculate portfolio returns using dot product of returns and weights
+    portfolio_returns = recent_returns.dot(weights)
+
+    # Determine percentile cuttof
+    percentile = (1 - confidence) * 100
+
+    # Compute historical VaR
+    hist_Var = -np.percentile(portfolio_returns, percentile) * amount_invested
+    return hist_Var
+
+print(Historical_VaR(weights, log_returns, amount_invested=1000000, confidence=.95))
 
